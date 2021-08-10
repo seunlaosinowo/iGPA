@@ -1,0 +1,107 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package azuop;
+
+
+import org.moeaframework.Executor;
+import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.Solution;
+import org.moeaframework.core.variable.EncodingUtils;
+import org.moeaframework.problem.AbstractProblem;
+
+
+
+public class AzuOP{
+
+    /**
+     * Implementation of the DTLZ2 function.
+     */
+    public static class iGPA extends AbstractProblem {
+
+        public iGPA() {
+            super(5, 1,2); //(x-numbr of objectives, and the , y=number of variables)
+        }
+
+        @Override
+        public Solution newSolution() {
+            Solution solution = new Solution(getNumberOfVariables(),
+                    getNumberOfObjectives(),getNumberOfConstraints());
+
+            for (int i = 0; i < getNumberOfVariables(); i++) {
+                solution.setVariable(i, EncodingUtils.newInt(2, 5));
+            }
+
+            return solution;
+        }
+
+       double targetcgpa=4.50; int []rem={2,3,1,3,2}; int sumofremainingunits=11; int totaltranscript=42; int totaltranscriptunits=10;
+               
+        public void evaluate(Solution solution) {
+            int[] course = EncodingUtils.getInt(solution);
+            double targetweight = 0;
+            double possiblecgpa=0;
+            
+            //int c[]=new int[5];
+
+            //The funcion that computes CGPA
+            
+            for(int i=0;i<5;i++){
+                targetweight+=rem[i]*course[i];
+                
+                //c[i]=course[i];
+            }
+//            if(pref[0]=="mid"){
+//                course[0]=0;
+//            }
+            
+            possiblecgpa=(totaltranscript+targetweight)/(totaltranscriptunits+sumofremainingunits);
+            //System.out.println(cgpa);
+            
+//            if(cgpa<targetcgpa){
+//                cgpa=0;
+//            }
+//            
+//           int c=course[1];
+//
+//            if (c > 3 ) {
+//                cgpa = 0;
+//            }
+            
+            solution.setObjective(0, -possiblecgpa);
+            solution.setConstraint(0,possiblecgpa<=targetcgpa?0:possiblecgpa);
+            solution.setConstraint(1,course[1]<=3?0:course[1]);
+            
+            //solution.setConstraint(0, c);
+        }
+        
+        
+    }
+
+    
+
+
+    public static void main(String[] args) {
+        NondominatedPopulation result = new Executor()
+                .withProblemClass(iGPA.class)
+                .withAlgorithm("SMPSO")
+                .withMaxEvaluations(100000)
+                .run();
+
+
+        for (Solution solution : result) {
+            
+            float a=(float) solution.getObjective(0);
+            System.out.println("The Grade are: "
+                                +EncodingUtils.getInt(solution.getVariable(0))+" "
+                                +EncodingUtils.getInt(solution.getVariable(1))+" "
+                                +EncodingUtils.getInt(solution.getVariable(2))+" "
+                                +EncodingUtils.getInt(solution.getVariable(3))+" "
+                                +EncodingUtils.getInt(solution.getVariable(4)));
+            System.out.println("The Possible CGPA is:"+a);
+        }
+    }
+
+}
